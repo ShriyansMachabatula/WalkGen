@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WalkGen Route Finder</title>
+</head>
+
+<body>
+    <h1>Enter a Route</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Start Location:</label>
+        <input type="text" name="start" required><br><br>
+
+        <label>End Location:</label>
+        <input type="text" name="end" required><br><br>
+
+        <label>Time Limit (minutes):</label>
+        <input type="number" name="time_limit" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    {% if route_data.error %}
+    <p style="color: red;">{{ route_data.error }} </p>
+    {% elif route_data %}
+    <p>Route distance : {{ route_data.route_length_m }} meters</p>
+    <p>Estimated walk time: {{ route_data.estimated_time_min }} minutes</p>
+    {% if route_data.walkable %}
+    <p style="color: green;"> This route is walkable within your time limit!</p>
+    {% else %}
+    <p style="color: red;"> This route exceeds your time limit.</p>
+    {% endif %}
+    <h2>Route Data: </h2>
+    <p>Start: {{ route_data.start }} ({{ route_data.start_coords.0 }}, {{ route_data.start_coords.1 }})</p>
+    <p>End: {{ route_data.end }} ({{ route_data.end_coords.0 }}, {{ route_data.end_coords.1 }}) </p>
+    <p>Time Limit: {{ route_data.time_limit }} mins</p>
+    {% endif %}
+</body>
+
+</html>
