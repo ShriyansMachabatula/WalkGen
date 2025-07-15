@@ -20,6 +20,10 @@ def home(request):
         end_node = ox.nearest_nodes(G, end_location.longitude, end_location.latitude)
 
         route = nx.shortest_path(G, start_node, end_node, weight='length')
+        route_coords = [
+        (G.nodes[n].get('y'), G.nodes[n].get('x'))
+        for n in route
+        if 'x' in G.nodes[n] and 'y' in G.nodes[n] and G.nodes[n]['x'] and G.nodes[n]['y']]
 
         route_length = nx.shortest_path_length(G, start_node, end_node, weight='length')
 
@@ -38,6 +42,7 @@ def home(request):
                 'time_limit': time_limit,
                 'route_length_m': round(route_length, 2),
                 'estimated_time_min': round(estimated_time, 2),
+                'route_coords':route_coords, 
                 'walkable': float(time_limit) >= estimated_time
             }
 

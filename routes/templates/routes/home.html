@@ -3,10 +3,15 @@
 
 <head>
     <title>WalkGen Route Finder</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 
 <body>
     <h1>Enter a Route</h1>
+    <div id="map" style="height: 400px; width: 100%; margin-bottom: 2rem;"></div>
     <form method="POST">
         {% csrf_token %}
         <label>Start Location:</label>
@@ -35,6 +40,45 @@
     <p>End: {{ route_data.end }} ({{ route_data.end_coords.0 }}, {{ route_data.end_coords.1 }}) </p>
     <p>Time Limit: {{ route_data.time_limit }} mins</p>
     {% endif %}
+
+    {% if route_data.route_coords and route_data.route_coords|length > 1 %}
+    <script>
+        console.log("Route:", {{ route_data.route_coords | safe }});
+
+        // Initialize map at the start point
+        var map = L.map('map').setView(
+            [{{ route_data.route_coords.0.0 }}, {{ route_data.route_coords.0.1 }}],
+        13
+);
+
+
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Build latlngs array from route_data
+        var latlngs = [
+            {% for lat, lon in route_data.route_coords %}
+        [{{ lat }}, {{ lon }}]{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        ];
+
+        // Draw polyline route
+        L.polyline(latlngs, { color: 'blue' }).addTo(map);
+
+        // Add Start and End markers
+        L.marker(latlngs[0]).addTo(map).bindPopup("Start").openPopup();
+        L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("End");
+
+        // Fit map to route
+        map.fitBounds(latlngs);
+    </script>
+    {% endif %}
+
+
 </body>
 
 </html>
